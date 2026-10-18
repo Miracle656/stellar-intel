@@ -78,6 +78,21 @@ contract.
 
 ## 2. Deploy
 
+> **Tooling status** — three known gaps in the scripts this section and the
+> next two rely on, visible here so nobody discovers them mid-launch:
+>
+> 1. `scripts/deploy-oracle-mainnet.ts --mode deploy-contract` passes no
+>    constructor arguments, but the contract requires
+>    `__constructor(admin, upgrade_admin)` (see §3).
+> 2. `lib/oracle/deployment.ts` imports only `@/.deployments/testnet.json` —
+>    a recorded `mainnet.json` is not read by anything yet.
+> 3. `scripts/verify-oracle-read.mts` is a testnet read check (its header
+>    says "Live testnet oracle read check (#723)"); it does not verify a
+>    mainnet deployment.
+>
+> The script fixes are tracked separately; the steps below are kept as the
+> intended procedure, each with its gap called out in place.
+
 ```bash
 export STELLAR_NETWORK=mainnet          # required; the tooling will not guess
 
@@ -93,9 +108,19 @@ npx tsx --tsconfig tsconfig.scripts.json scripts/deploy-oracle-mainnet.ts \
   --mode deploy-contract --wasm-hash <64-hex> --live
 ```
 
+> **Known gap:** this deploy cannot work as written. The script builds
+> `Operation.createCustomContract({ address, wasmHash, salt })` with no
+> `constructorArgs`, but the contract requires
+> `__constructor(admin, upgrade_admin)` — the instance would deploy with
+> neither authority bound, which §3 calls an open door.
+
 Record the resulting contract id in `.deployments/mainnet.json`, matching the
 shape of `testnet.json`. **This is the source of truth** — `lib/oracle/deployment.ts`
 reads it, so nothing else needs editing (#723).
+
+> **Known gap:** `lib/oracle/deployment.ts` currently imports only
+> `@/.deployments/testnet.json`. Until it also reads `mainnet.json`, recording
+> the id there documents it for humans but drives no tooling.
 
 ---
 
@@ -108,6 +133,13 @@ open door.
 # Operational admin: a multisig account, not a single key.
 # Upgrade admin: a DIFFERENT multisig account.
 ```
+
+> **Known gap:** there is no post-deploy bind command — the code block above
+> holds only the two comments because authorities are bound **only at
+> construction**: a correct deploy must pass `admin` and `upgrade_admin` as
+> constructor arguments to `__constructor`. The current mainnet deploy script
+> does not do this yet (see §2), so this step cannot be performed at all until
+> it does.
 
 Both are `Address` values, so multisig requires no contract change —
 `require_auth()` delegates the threshold check to the host. Use
@@ -123,14 +155,26 @@ npx tsx scripts/verify-oracle-read.mts
 
 It fails loudly when one account holds both roles.
 
+> **Known gap:** `verify-oracle-read.mts` currently checks **testnet** only
+> (its header: "Live testnet oracle read check (#723)") — a clean run here
+> says nothing about the mainnet deployment.
+
 ---
 
 ## 4. Seed, then verify
 
 ```bash
+# init-oracle-registry.ts reads NEXT_PUBLIC_STELLAR_NETWORK (default:
+# testnet) — STELLAR_NETWORK from §2 is not enough, and without this the
+# seed below would run against testnet.
+export NEXT_PUBLIC_STELLAR_NETWORK=mainnet
+
 npx tsx --tsconfig tsconfig.scripts.json scripts/init-oracle-registry.ts   # anchors
 npx tsx scripts/verify-oracle-read.mts                                     # confirm
 ```
+
+> **Known gap:** the confirm step shares §3's limitation —
+> `verify-oracle-read.mts` is a testnet-only read check today.
 
 Publishing historical outcomes is the publisher's job, not a separate migration:
 `packages/publisher` reads `outcome_log` and submits rows that are reconciled but
@@ -141,8 +185,10 @@ partial batches, #909).
 Confirm before announcing anything:
 
 - `list_anchors` returns the expected set
-- `get_score_for_corridor` returns non-null for a seeded pair — a `null` means
-  zero samples, which is what an empty registry looks like (#723)
+- `get_score_for_corridor` returns a non-zero `sample_size` (4th tuple
+  element) for a seeded pair — the entrypoint returns an
+  `(i128, i128, u64, u32)` tuple, which is all zeros when there are no
+  samples, which is what an empty registry looks like (#723)
 - `contract_version` is non-zero
 
 ---
