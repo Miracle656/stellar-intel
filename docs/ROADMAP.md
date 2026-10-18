@@ -25,8 +25,7 @@ Ticket ranges point back to numbered issues in the
 > TS read SDK (#201), Python consumer (#203/#821); v2.0 leaderboard/history/composite/dispute
 > (#157–#159, #166). Marked in-flight (`[-]`): `@stellarintel/sdk` + `/mcp` (built, unpublished —
 > npm 404), multisig admin (two-step rotation shipped, 2-of-3 pending), decentralization (#875).
-> GraphQL is on `main` but the live endpoint currently 500s. The open security /
-> production-readiness / S-tier program lives in [`maintainer.md`](../maintainer.md).
+> GraphQL is on `main` but the live endpoint currently 500s.
 >
 > **Reconciliation, 2026-08-28.** Waves reconciled against the milestone list
 > (#1076). Three v1 milestones that had shipped without ever appearing here are
@@ -685,7 +684,7 @@ the distribution wave.
 
 - [-] **`@stellarintel/sdk` on npm** — typed TS client for the HTTP API +
   MCP; React hooks; three reference integrations. `packages/sdk` built
-  (#981); **not yet published (npm 404) — see `maintainer.md` Phase 0**
+  (#981); **not yet published (npm 404) — publishing is a maintainer step**
 - [-] **`@stellarintel/mcp` on npm** — GA MCP server, versioned, with a
   signed CHANGELOG. `packages/mcp` built; not yet published
 - [ ] **Embeddable widget** — `<StellarIntelWidget />` React component +
@@ -767,8 +766,7 @@ decomposed into the child issues below.
       API rather than replacing it
       ([#870](https://github.com/ezedike-evan/stellar-intel/issues/870)).
       `app/api/graphql/route.ts` + `lib/graphql/*`. **Prod caveat: the live
-      endpoint currently 500s (durable store unconfigured) — see
-      `maintainer.md` Phase 0.**
+      endpoint currently 500s (durable store unconfigured).**
 - [x] **Developer portal + interactive docs** — browsable API reference
       generated from `public/openapi.json`, an interactive console against
       a sandboxed environment, and SDK quickstarts in one place
@@ -868,9 +866,9 @@ document supersedes._
 These do not belong to a single wave — they run in parallel and every
 wave advances them.
 
-**Docs** — the ten load-bearing doc files listed in
-[`maintainer.md § 3`](../maintainer.md) are updated alongside the code
-that changes their subject. A wave does not ship with out-of-date docs.
+**Docs** — the docs under `docs/` that describe the changed subject are
+updated alongside the code that changes it. A wave does not ship with
+out-of-date docs.
 Analytics documentation lives in [`docs/ANALYTICS.md`](ANALYTICS.md).
 
 **Observability** — every wave extends the metric surface. v1.3 seeds
