@@ -292,7 +292,7 @@ instrumented.
 - [ ] `#128` `ReputationStore` interface (pluggable — SQLite dev, Postgres prod)
 - [x] `app/api/outcomes/route.ts` — accept outcome tuples, verify signatures (implemented as `app/api/reputation/append/route.ts`)
 - [x] `lib/publisher/queue.ts` — durable outcome queue (SQLite-backed dev) (implemented as `packages/publisher` batching, `packages/publisher/src/batch.ts`)
-- [x] `lib/publisher/sign.ts` — publisher ed25519 signing (dev key only) (implemented as `packages/publisher` signing, `packages/publisher/src/index.ts`)
+- [x] `lib/publisher/sign.ts` — publisher ed25519 signing (dev key only) (implemented as `packages/publisher` signing, `packages/publisher/src/batch.ts`)
 - [ ] Outcome schema + migration scripts
 - [ ] Feature flag `REPUTATION_WRITE` (default off)
 
